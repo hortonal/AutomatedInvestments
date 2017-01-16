@@ -30,3 +30,23 @@ def load_historical_prices(tickers, verbose = False):
     cell.reset_index().sort(['Ticker', 'Date'], ascending=[1,0]).set_index('Ticker')
     
     return cell, start_dates
+    
+def get_pricing(symbols, start_date, verbose = True):
+    ticker_df_list = []
+    for index, row in symbols.iterrows(): 
+        try:
+            r = quandl.get(row.Quandl.format(row.Ticker), start_date=start_date, authtoken=auth)
+            r['Ref'] = row.Ticker 
+            r = r.loc[:, ['Ref', row.PriceColumn]]
+            r.rename(columns={row.PriceColumn: 'Price'}, inplace=True)
+            ticker_df_list.append(r)
+            if verbose:
+                print("Obtained data for ticker %s" % row.Ticker)
+        except Exception as e:
+            if verbose:
+                print("No data for ticker %s\n%s" % (row.Ticker, str(e)))    
+    df = pd.concat(ticker_df_list)   
+    cell= df[['Ref','Price']]     
+    #cell.reset_index().sort(['Ref', 'Date'], ascending=[1,0]).set_index('Ref')
+    
+    return cell.pivot(columns='Ref')
