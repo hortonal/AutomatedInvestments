@@ -2,8 +2,8 @@ import pandas as pd
 import numpy as np
 import sklearn.covariance
 
-import cvxopt as opt
-from cvxopt import blas, solvers
+#import cvxopt as opt
+#from cvxopt import blas, solvers
 
 import scipy.cluster.hierarchy as sch
 import random
