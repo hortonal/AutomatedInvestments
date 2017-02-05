@@ -6,30 +6,28 @@ Created on Sun Jan 15 19:33:51 2017
 """
 import pandas as pd
 import quandl
+from pandas.io.data import DataReader
 
 auth = "d85AxYgsEaWPyhx_k2ZL"
 
-def load_historical_prices(tickers, verbose = False):
-    start_dates = {}
-    ticker_df_list = []                       # initialize list of dataframes for each ticker                          #
-    
-    for ticker in tickers: 
+def yahoo_prices(symbols, start_date, verbose = True):
+    ticker_df_list = []
+    for index, row in symbols.iterrows(): 
         try:
-            r = quandl.get("LSE/{0}".format(ticker), authtoken=auth)
-            r['Ticker'] = ticker 
-            start_dates[ticker] = r.index.values[0];
-            ticker_df_list.append(r)
+            data = DataReader(row.Ticker, 'yahoo', start_date)
+            data['Ref'] = row.Ticker 
+            data = data.loc[:, ['Ref', 'Adj Close']]
+            data.rename(columns={'Adj Close': 'Price'}, inplace=True)
             if verbose:
-                print("Obtained data for ticker %s" % ticker)
-        except:
+                print("{}: Historical Perf: {}".format(row.Ticker, data.tail(1).iloc[0]['Price']/data.iloc[0]['Price']-1))            
+            ticker_df_list.append(data)
+        except Exception as e:
             if verbose:
-                print("No data for ticker %s" % ticker)
-    
-    df = pd.concat(ticker_df_list)        # build single df of all data
-    cell= df[['Ticker','Price']]          # extract ticker and close price information 
-    cell.reset_index().sort(['Ticker', 'Date'], ascending=[1,0]).set_index('Ticker')
-    
-    return cell, start_dates
+                print("No data for ticker %s\n%s" % (row.Ticker, str(e)))    
+    df = pd.concat(ticker_df_list)   
+    cell= df[['Ref','Price']] 
+    return cell.pivot(columns='Ref')
+
     
 def get_pricing(symbols, start_date, verbose = True):
     ticker_df_list = []
@@ -48,5 +46,4 @@ def get_pricing(symbols, start_date, verbose = True):
     df = pd.concat(ticker_df_list)   
     cell= df[['Ref','Price']]     
     #cell.reset_index().sort(['Ref', 'Date'], ascending=[1,0]).set_index('Ref')
-    
     return cell.pivot(columns='Ref')

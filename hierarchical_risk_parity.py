@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 #from collections import OrderedDict
 import cvxpy
-
+import os.path
 import data
 #import helpers
 
@@ -47,10 +47,16 @@ def plot_portfolios(rets, sols):
     plt.ylabel('Return')
     plt.show()
     
-symbols = pd.read_csv('MiniAssetUniverse.csv')
+force_download = True
+
+symbols = pd.read_csv('AssetUniverse.csv')
 symbols = symbols.loc[:,['Ticker', 'Quandl', 'PriceColumn']]
            
-fixings = data.get_pricing(symbols, start_date='2015-1-1')
+if(force_download or not os.path.exists('fixings.pkl')):
+    fixings = data.yahoo_prices(symbols, start_date='2015-1-1')
+    fixings.to_pickle('fixings.pkl')              
+else:
+    fixings = pd.read_pickle('fiximgs.pkl')
 
 # Do we wante to resample to just weekly/monthly fixings?
 resample = fixings.resample('W-MON')
