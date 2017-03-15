@@ -59,8 +59,8 @@ class Launchpad(QMainWindow):
         self.txtOptimizeStatus.resize(400,40)
         
         self.sliStandardDeviation = QSlider(Qt.Horizontal)
-        self.sliStandardDeviation.setMinimum(1)
-        self.sliStandardDeviation.setMaximum(1000)
+        #self.sliStandardDeviation.setMinimum(1)
+        #self.sliStandardDeviation.setMaximum(1000)
         self.sliStandardDeviation.setValue(10)
         self.sliStandardDeviation.setTickPosition(QSlider.TicksBelow)
         self.sliStandardDeviation.setTickInterval(1)
@@ -132,9 +132,12 @@ class Launchpad(QMainWindow):
         self.returns = resample.pct_change(fill_method='pad')
         
         self.optimization_solutions = mean_variance(self.returns)
+        self.optimization_solutions = sorted(self.optimization_solutions, key=lambda x: x['sd']);
         self.plot_portfolios(self.optimization_solutions)
         
         self.txtOptimizeStatus.setText("Optimization Complete")
+        self.sliStandardDeviation.setMinimum(self.optimization_solutions[0]['sd']*1000)
+        self.sliStandardDeviation.setMaximum(self.optimization_solutions[-1]['sd']*1000)
         self.standard_deviation_changed()
 
     def get_cache_name(self):
