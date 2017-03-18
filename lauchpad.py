@@ -75,7 +75,7 @@ class Launchpad(QMainWindow):
         self.axes = self.fig.add_subplot(111)
 
         self.canvas2 = FigureCanvas(self.fig)
-        self.ops = self.fig.add_subplot(111)
+        self.ops = self.fig.add_subplot(111, facecolor='green')
 
         self.main_widget = QWidget(self)
         l = QVBoxLayout(self.main_widget)
